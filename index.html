@@ -76,7 +76,7 @@
         >You can take a shortcut here and...</label
       >
       <label class="label">Get the best result for this amount:</label>
-      <div class="field has-addons">
+      <div class="field has-addons mb-1">
         <p class="control is-marginless">
           <a class="button is-static">
             $
@@ -102,16 +102,34 @@
         </div>
       </div>
       <p class="help">
-        Shows the best possible choice for the provided amount.
+        Shows the best possible choice for the provided amount
         <br />
-        Calculates using the [Coverage X Efficiency] formula.
+        Calculates using the [Coverage X Efficiency] formula
       </p>
-      <div class="field mb-6">
+      <div class="field mb-2">
         <div class="control">
           <label class="checkbox">
             <input id="autoRecalc" type="checkbox" checked />
             Automatically recalculate the best choice on segment change
           </label>
+          <p class="help">
+            If unchecked, the best choice will not be
+            <br />
+            automatically recalculated on segment change
+          </p>
+        </div>
+      </div>
+      <div class="field mb-6">
+        <div class="control">
+          <label class="checkbox">
+            <input id="strictBudgetMatch" type="checkbox" checked />
+            Match the allocated amount exactly
+          </label>
+          <p class="help">
+            If unchecked, gives the best closest choice according to
+            <br />
+            the formula rather than forcing the use of the whole amount
+          </p>
         </div>
       </div>
 
@@ -440,6 +458,9 @@
     );
     const getBestResultBtnElement = document.getElementById("getBestResultBtn");
     const autoRecalcElement = document.getElementById("autoRecalc");
+    const strictBudgetMatchElement = document.getElementById(
+      "strictBudgetMatch"
+    );
 
     window.addEventListener("load", calculate);
     segmentElement.addEventListener("input", calculate);
@@ -456,10 +477,14 @@
     autoRecalcElement.addEventListener("input", e => {
       autoRecalc = autoRecalcElement.checked;
     });
+    strictBudgetMatchElement.addEventListener("input", e => {
+      strictBudgetMatch = strictBudgetMatchElement.checked;
+    });
 
     let segment = segmentElement.value;
 
     let autoRecalc = true;
+    let strictBudgetMatch = true;
 
     let tvValue = null;
     let internetValue = null;
@@ -601,6 +626,14 @@
       return parseFloat(((percentage / value || 0) * 50000).toFixed(4));
     }
 
+    function validateBudgetLimit(current, max) {
+      if (strictBudgetMatch) {
+        return current == max;
+      } else {
+        return current <= max;
+      }
+    }
+
     function getBestPossibleRatio(e) {
       maxBudget = getBestResultBudgetElement.value;
 
@@ -608,7 +641,6 @@
       let bestInternetEffAt = 0;
       let bestMagazinesEffAt = 0;
 
-      let bestPossibleEff = 0;
       let bestPossibleRatio = 0;
 
       for (const [tvKey, tvValue] of Object.entries(tvStats)) {
@@ -645,14 +677,13 @@
 
             let overallEff = (overallCoverage / overallBudget || 0) * 50000;
 
-            let overallRatio = overallEff * overallCoverage;
+            let overallRatio = overallCoverage * overallEff;
 
             if (
               overallRatio > bestPossibleRatio &&
-              overallBudget <= maxBudget
+              validateBudgetLimit(overallBudget, maxBudget)
             ) {
               bestPossibleRatio = overallRatio;
-              bestPossibleEff = overallEff;
               bestTvEffAt = tvKey;
               bestInternetEffAt = internetKey;
               bestMagazinesEffAt = magazinesKey;
