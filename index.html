@@ -110,8 +110,8 @@
             </p>
           </div>
           <p class="help">Peak efficiency is at $1200000</p>
-          <div id="tvCoverage"></div>
-          <div id="tvEff"></div>
+          <div id="tvCoverage">&nbsp;</div>
+          <div id="tvEff">&nbsp;</div>
         </div>
 
         <div class="budget__internet mb-4">
@@ -136,8 +136,8 @@
             </p>
           </div>
           <p class="help">Peak efficiency is at $1000000</p>
-          <div id="internetCoverage"></div>
-          <div id="internetEff"></div>
+          <div id="internetCoverage">&nbsp;</div>
+          <div id="internetEff">&nbsp;</div>
         </div>
 
         <div class="budget__magazines mb-4">
@@ -162,8 +162,8 @@
             </p>
           </div>
           <p class="help">Peak efficiency is at $600000</p>
-          <div id="magazinesCoverage"></div>
-          <div id="magazinesEff"></div>
+          <div id="magazinesCoverage">&nbsp;</div>
+          <div id="magazinesEff">&nbsp;</div>
         </div>
       </div>
 
@@ -419,11 +419,12 @@
       let magazinesPercentage =
         magazinesStats[magazinesValue] * segments[segment]["magazines"];
 
-      tvCoverageElement.innerHTML = "Covers " + tvPercentage.toFixed(2) + "%";
+      tvCoverageElement.innerHTML =
+        "Coverage: " + tvPercentage.toFixed(2) + "%";
       interneCoverageElement.innerHTML =
-        "Covers " + internetPercentage.toFixed(2) + "%";
+        "Coverage: " + internetPercentage.toFixed(2) + "%";
       magazinesCoverageElement.innerHTML =
-        "Covers " + magazinesPercentage.toFixed(2) + "%";
+        "Coverage: " + magazinesPercentage.toFixed(2) + "%";
 
       let tvCostEfficiency = ((tvPercentage / tvValue || 0) * 50000).toFixed(4);
       let internetCostEfficiency = (
