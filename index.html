@@ -20,11 +20,25 @@
       .mb-4 {
         margin-bottom: 20px !important;
       }
+      .mb-5 {
+        margin-bottom: 25px !important;
+      }
+      .mb-6 {
+        margin-bottom: 30px !important;
+      }
       .text-bold {
         font-weight: 600;
       }
+      .budget {
+        display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: auto;
+        grid-column-gap: 20px;
+      }
       .content {
+        margin: 20px auto;
         padding: 20px;
+        max-width: 530px;
       }
       .input {
         border-left: none !important;
@@ -35,11 +49,16 @@
       .help.help.help {
         margin: 2px 0 7.5px 0;
       }
+      @media screen and (min-width: 531px) {
+        .budget {
+          grid-template-columns: 150px 150px 150px;
+        }
+      }
     </style>
   </head>
   <body>
     <div class="content">
-      <div class="field">
+      <div class="field mb-5">
         <label class="label">Choose segment:</label>
         <div class="control is-marginless">
           <div class="select">
@@ -53,7 +72,7 @@
         </div>
       </div>
 
-      <div class="mb-4">
+      <div class="mb-6">
         Input the amount of money you want to allocate for each channel
         <br />
         Minimum amount is 0
@@ -68,82 +87,84 @@
         </p>
       </div>
 
-      <label class="label">TV:</label>
-      <div class="field has-addons is-marginless">
-        <p class="control is-marginless">
-          <a class="button is-static">
-            $
-          </a>
-        </p>
-        <p class="control is-marginless">
-          <input
-            id="tv"
-            type="number"
-            min="0"
-            max="2800000"
-            step="50000"
-            name="tv"
-            value="0"
-            class="input"
-          />
-        </p>
-      </div>
-      <p class="help">Peak efficiency is at $1200000</p>
-      <div class="mb-4">
-        <div id="tvCoverage"></div>
-        <div id="tvEff"></div>
-      </div>
+      <div class="budget mb-2">
+        <div class="budget__tv mb-4">
+          <label class="label">TV:</label>
+          <div class="field has-addons is-marginless">
+            <p class="control is-marginless">
+              <a class="button is-static">
+                $
+              </a>
+            </p>
+            <p class="control is-marginless">
+              <input
+                id="tv"
+                type="number"
+                min="0"
+                max="2800000"
+                step="50000"
+                name="tv"
+                value="0"
+                class="input"
+              />
+            </p>
+          </div>
+          <p class="help">Peak efficiency is at $1200000</p>
+          <div id="tvCoverage"></div>
+          <div id="tvEff"></div>
+        </div>
 
-      <label class="label">Internet:</label>
-      <div class="field has-addons is-marginless">
-        <p class="control is-marginless">
-          <a class="button is-static">
-            $
-          </a>
-        </p>
-        <p class="control is-marginless">
-          <input
-            id="internet"
-            type="number"
-            min="0"
-            max="2800000"
-            step="50000"
-            name="internet"
-            value="0"
-            class="input"
-          />
-        </p>
-      </div>
-      <p class="help">Peak efficiency is at $1000000</p>
-      <div class="mb-4">
-        <div id="internetCoverage"></div>
-        <div id="internetEff"></div>
-      </div>
+        <div class="budget__internet mb-4">
+          <label class="label">Internet:</label>
+          <div class="field has-addons is-marginless">
+            <p class="control is-marginless">
+              <a class="button is-static">
+                $
+              </a>
+            </p>
+            <p class="control is-marginless">
+              <input
+                id="internet"
+                type="number"
+                min="0"
+                max="2800000"
+                step="50000"
+                name="internet"
+                value="0"
+                class="input"
+              />
+            </p>
+          </div>
+          <p class="help">Peak efficiency is at $1000000</p>
+          <div id="internetCoverage"></div>
+          <div id="internetEff"></div>
+        </div>
 
-      <label class="label">Magazines:</label>
-      <div class="field has-addons is-marginless">
-        <p class="control is-marginless">
-          <a class="button is-static">
-            $
-          </a>
-        </p>
-        <p class="control is-marginless">
-          <input
-            id="magazines"
-            type="number"
-            min="0"
-            max="2800000"
-            step="50000"
-            name="magazines"
-            value="0"
-            class="input"
-          />
-        </p>
-      </div>
-      <p class="help">Peak efficiency is at $600000</p>
-      <div class="mb-4">
-        <div id="magazinesCoverage"></div>
-        <div id="magazinesEff"></div>
+        <div class="budget__magazines mb-4">
+          <label class="label">Magazines:</label>
+          <div class="field has-addons is-marginless">
+            <p class="control is-marginless">
+              <a class="button is-static">
+                $
+              </a>
+            </p>
+            <p class="control is-marginless">
+              <input
+                id="magazines"
+                type="number"
+                min="0"
+                max="2800000"
+                step="50000"
+                name="magazines"
+                value="0"
+                class="input"
+              />
+            </p>
+          </div>
+          <p class="help">Peak efficiency is at $600000</p>
+          <div id="magazinesCoverage"></div>
+          <div id="magazinesEff"></div>
+        </div>
       </div>
 
       <div class="mb-1 text-bold">Overall stats:</div>
