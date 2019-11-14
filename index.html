@@ -40,7 +40,7 @@
         padding: 20px;
         max-width: 530px;
       }
-      .input {
+      .has-addons .control .input {
         border-left: none !important;
       }
       .label {
@@ -69,6 +69,49 @@
               <option value="youth">Youth</option>
             </select>
           </div>
+        </div>
+      </div>
+
+      <label class="label is-marginless"
+        >You can take a shortcut here and...</label
+      >
+      <label class="label">Get the best result for this amount:</label>
+      <div class="field has-addons">
+        <p class="control is-marginless">
+          <a class="button is-static">
+            $
+          </a>
+        </p>
+        <div class="control">
+          <input
+            id="getBestResultsBudget"
+            type="number"
+            min="0"
+            max="8400000"
+            step="50000"
+            name="getBestResultsBudget"
+            value="0"
+            placeholder="0"
+            class="input"
+          />
+        </div>
+        <div class="control">
+          <a id="getBestResultBtn" class="button is-info">
+            Submit
+          </a>
+        </div>
+      </div>
+      <p class="help">
+        Shows the best possible choice for the provided amount.
+        <br />
+        Calculates using the [Coverage X Efficiency] formula.
+      </p>
+      <div class="field mb-6">
+        <div class="control">
+          <label class="checkbox">
+            <input id="autoRecalc" type="checkbox" checked />
+            Automatically recalculate the best choice on segment change
+          </label>
         </div>
       </div>
 
@@ -105,11 +148,11 @@
                 step="50000"
                 name="tv"
                 value="0"
+                placeholder="0"
                 class="input"
               />
             </p>
           </div>
-          <p class="help">Peak efficiency is at $1200000</p>
           <div id="tvCoverage">&nbsp;</div>
           <div id="tvEff">&nbsp;</div>
         </div>
@@ -131,11 +174,11 @@
                 step="50000"
                 name="internet"
                 value="0"
+                placeholder="0"
                 class="input"
               />
             </p>
           </div>
-          <p class="help">Peak efficiency is at $1000000</p>
           <div id="internetCoverage">&nbsp;</div>
           <div id="internetEff">&nbsp;</div>
         </div>
@@ -157,20 +200,22 @@
                 step="50000"
                 name="magazines"
                 value="0"
+                placeholder="0"
                 class="input"
               />
             </p>
           </div>
-          <p class="help">Peak efficiency is at $600000</p>
           <div id="magazinesCoverage">&nbsp;</div>
           <div id="magazinesEff">&nbsp;</div>
         </div>
       </div>
 
-      <div class="mb-1 text-bold">Overall stats:</div>
-      <div id="budget">&nbsp;</div>
-      <div id="coverage">&nbsp;</div>
-      <div id="costEfficiency">&nbsp;</div>
+      <div class="summary mb-5">
+        <div class="mb-1 text-bold">Overall stats:</div>
+        <div id="budget">&nbsp;</div>
+        <div id="coverage">&nbsp;</div>
+        <div id="costEfficiency">&nbsp;</div>
+      </div>
     </div>
   </body>
   <script>
@@ -390,34 +435,60 @@
     );
     const magazinesEffElement = document.getElementById("magazinesEff");
 
+    const getBestResultBudgetElement = document.getElementById(
+      "getBestResultsBudget"
+    );
+    const getBestResultBtnElement = document.getElementById("getBestResultBtn");
+    const autoRecalcElement = document.getElementById("autoRecalc");
+
     window.addEventListener("load", calculate);
     segmentElement.addEventListener("input", calculate);
+    segmentElement.addEventListener("input", e => {
+      if (autoRecalc) {
+        getBestPossibleRatio();
+      }
+    });
     tvElement.addEventListener("input", calculate);
     internetElement.addEventListener("input", calculate);
     magazinesElement.addEventListener("input", calculate);
 
+    getBestResultBtnElement.addEventListener("click", getBestPossibleRatio);
+    autoRecalcElement.addEventListener("input", e => {
+      autoRecalc = autoRecalcElement.checked;
+    });
+
+    let segment = segmentElement.value;
+
+    let autoRecalc = true;
+
+    let tvValue = null;
+    let internetValue = null;
+    let magazinesValue = null;
+
+    let tvPercentage = null;
+    let internetPercentage = null;
+    let magazinesPercentage = null;
+
+    let tvCostEfficiency = null;
+    let internetCostEfficiency = null;
+    let magazinesCostEfficiency = null;
+
+    let budgetValue = null;
+    let coverage = null;
+    let costEfficiency = null;
+
+    let maxBudget = null;
+
     function calculate(e) {
-      let segment = segmentElement.value;
+      segment = segmentElement.value;
 
-      let tvValue = parseFloat(tvElement.value);
-      let internetValue = parseFloat(internetElement.value);
-      let magazinesValue = parseFloat(magazinesElement.value);
+      tvValue = getTvValue();
+      internetValue = getInternetValue();
+      magazinesValue = getMagazinesValue();
 
-      if (tvValue !== 0 && tvValue % 50000 > 0) {
-        tvValue -= tvValue % 50000;
-      }
-      if (internetValue !== 0 && internetValue % 50000 > 0) {
-        internetValue -= internetValue % 50000;
-      }
-      if (magazinesValue !== 0 && magazinesValue % 50000 > 0) {
-        magazinesValue -= magazinesValue % 50000;
-      }
-
-      let tvPercentage = tvStats[tvValue] * segments[segment]["tv"];
-      let internetPercentage =
-        internetStats[internetValue] * segments[segment]["internet"];
-      let magazinesPercentage =
-        magazinesStats[magazinesValue] * segments[segment]["magazines"];
+      tvPercentage = getTvPercentage();
+      internetPercentage = getInternetPercentage();
+      magazinesPercentage = getMagazinesPercentage();
 
       tvCoverageElement.innerHTML =
         "Coverage: " + tvPercentage.toFixed(2) + "%";
@@ -426,11 +497,11 @@
       magazinesCoverageElement.innerHTML =
         "Coverage: " + magazinesPercentage.toFixed(2) + "%";
 
-      let tvCostEfficiency = ((tvPercentage / tvValue || 0) * 50000).toFixed(4);
-      let internetCostEfficiency = (
+      tvCostEfficiency = ((tvPercentage / tvValue || 0) * 50000).toFixed(4);
+      internetCostEfficiency = (
         (internetPercentage / internetValue || 0) * 50000
       ).toFixed(4);
-      let magazinesCostEfficiency = (
+      magazinesCostEfficiency = (
         (magazinesPercentage / magazinesValue || 0) * 50000
       ).toFixed(4);
 
@@ -440,17 +511,161 @@
       magazinesEffElement.innerHTML =
         "Efficiency: " + magazinesCostEfficiency + "%";
 
-      let budgetValue = tvValue + internetValue + magazinesValue;
-      let coverage = (
+      budgetValue = tvValue + internetValue + magazinesValue;
+      coverage = (
         tvPercentage +
         internetPercentage +
         magazinesPercentage
       ).toFixed(2);
-      let costEfficiency = ((coverage / budgetValue || 0) * 50000).toFixed(4);
+      costEfficiency = ((coverage / budgetValue || 0) * 50000).toFixed(4);
 
       budget.innerHTML = "Budget: $" + budgetValue;
       coverageElement.innerHTML = "Coverage of the segment: " + coverage + "%";
       costEfficiencyElement.innerHTML = "Efficiency: " + costEfficiency + "%";
+    }
+
+    function getTvValue() {
+      return getElementValue(tvElement);
+    }
+
+    function getInternetValue() {
+      return getElementValue(internetElement);
+    }
+
+    function getMagazinesValue() {
+      return getElementValue(magazinesElement);
+    }
+
+    function getElementValue(element) {
+      let value = element.value;
+
+      if (value === "") {
+        value = 0;
+      }
+
+      value = parseFloat(value);
+
+      if (value !== 0 && value % 50000 > 0) {
+        value -= value % 50000;
+      }
+
+      return value;
+    }
+
+    function getTvPercentage() {
+      return calculateTvPercentage(tvValue);
+    }
+
+    function getInternetPercentage() {
+      return calculateInternetPercentage(internetValue);
+    }
+
+    function getMagazinesPercentage() {
+      return calculateMagazinesPercentage(magazinesValue);
+    }
+
+    function calculateTvPercentage(tvValue) {
+      return calculatePercentage(tvStats, tvValue, segment, "tv");
+    }
+
+    function calculateInternetPercentage(internetValue) {
+      return calculatePercentage(
+        internetStats,
+        internetValue,
+        segment,
+        "internet"
+      );
+    }
+
+    function calculateMagazinesPercentage(magazinesValue) {
+      return calculatePercentage(
+        magazinesStats,
+        magazinesValue,
+        segment,
+        "magazines"
+      );
+    }
+
+    function calculatePercentage(
+      statsObj,
+      statsObjKey,
+      segmentName,
+      segmentChannel
+    ) {
+      return parseFloat(
+        statsObj[statsObjKey] * segments[segmentName][segmentChannel]
+      );
+    }
+
+    function calculateCostEfficiency(percentage, value) {
+      return parseFloat(((percentage / value || 0) * 50000).toFixed(4));
+    }
+
+    function getBestPossibleRatio(e) {
+      maxBudget = getBestResultBudgetElement.value;
+
+      let bestTvEffAt = 0;
+      let bestInternetEffAt = 0;
+      let bestMagazinesEffAt = 0;
+
+      let bestPossibleEff = 0;
+      let bestPossibleRatio = 0;
+
+      for (const [tvKey, tvValue] of Object.entries(tvStats)) {
+        let tvEff = calculateCostEfficiency(
+          calculateTvPercentage(tvKey),
+          tvKey
+        );
+
+        for (const [internetKey, internetValue] of Object.entries(
+          internetStats
+        )) {
+          let internetEff = calculateCostEfficiency(
+            calculateInternetPercentage(internetKey),
+            internetKey
+          );
+
+          for (const [magazinesKey, magazinesValue] of Object.entries(
+            magazinesStats
+          )) {
+            let magazinesEff = calculateCostEfficiency(
+              calculateMagazinesPercentage(magazinesKey),
+              magazinesKey
+            );
+
+            let overallCoverage =
+              calculateTvPercentage(tvKey) +
+              calculateInternetPercentage(internetKey) +
+              calculateMagazinesPercentage(magazinesKey);
+
+            let overallBudget =
+              parseFloat(tvKey) +
+              parseFloat(internetKey) +
+              parseFloat(magazinesKey);
+
+            let overallEff = (overallCoverage / overallBudget || 0) * 50000;
+
+            let overallRatio = overallEff * overallCoverage;
+
+            if (
+              overallRatio > bestPossibleRatio &&
+              overallBudget <= maxBudget
+            ) {
+              bestPossibleRatio = overallRatio;
+              bestPossibleEff = overallEff;
+              bestTvEffAt = tvKey;
+              bestInternetEffAt = internetKey;
+              bestMagazinesEffAt = magazinesKey;
+            }
+          }
+        }
+      }
+
+      tvElement.value = bestTvEffAt;
+      internetElement.value = bestInternetEffAt;
+      magazinesElement.value = bestMagazinesEffAt;
+
+      calculate();
     }
 
     function addStep(object) {
